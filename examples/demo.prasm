@@ -1,0 +1,77 @@
+; prox demo program
+; shows off printing loops subroutines and the heap
+; expected output
+;   PROX
+;   5 4 3 2 1
+;   42
+;   Hi!
+
+; print the banner PROX
+SET R0 80
+PRC R0
+SET R0 82
+PRC R0
+SET R0 79
+PRC R0
+SET R0 88
+PRC R0
+SET R0 10
+PRC R0
+
+; count down from 5 using a label and a branch
+SET R1 5
+LBL 1
+PRI R1
+SET R0 32
+PRC R0
+DEC R1
+JMZ R1 2
+JMP 1
+LBL 2
+SET R0 10
+PRC R0
+
+; call a sub with R2 as the arg and read the result from R10
+SET R2 39
+CAL 3
+PRI R10
+SET R0 10
+PRC R0
+
+; ask for 3 words of heap keep the base in R6 then write Hi!
+SET R3 3
+REQ R3 R4
+CPY R4 R6
+STR R4 72
+INC R4
+STR R4 105
+INC R4
+STR R4 33
+
+; walk the block back from the saved base and print each word
+CPY R6 R4
+LOD R4 R5
+PRC R5
+INC R4
+LOD R4 R5
+PRC R5
+INC R4
+LOD R4 R5
+PRC R5
+
+; free using the saved base since R4 has moved
+DEL R6
+SET R0 10
+PRC R0
+
+; skip over the sub
+JMP 9
+
+; sub adds 3 to R2 and returns it
+LBL 3
+INC R2
+INC R2
+INC R2
+RTR R2
+
+LBL 9

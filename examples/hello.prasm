@@ -1,0 +1,9 @@
+; smallest useful program
+; prints hi and a newline
+
+SET R0 104
+PRC R0
+SET R0 105
+PRC R0
+SET R0 10
+PRC R0
