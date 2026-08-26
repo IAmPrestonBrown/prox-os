@@ -1,0 +1,150 @@
+#
+# ProxOS CMake
+#
+# Copyright 2026 Preston Brown
+#
+
+cmake_minimum_required(VERSION 3.21)
+
+project(ProxOS
+    VERSION 0.1.0
+    DESCRIPTION "PRX bytecode virtual machine, PrASM assembler, and host tooling"
+    LANGUAGES C CXX
+)
+
+if(CMAKE_CROSSCOMPILING)
+    set(PROX_HOST_DEFAULT OFF)
+else()
+    set(PROX_HOST_DEFAULT ON)
+endif()
+
+option(PROX_BUILD_CLI   "Build the prox host command line driver" ${PROX_HOST_DEFAULT})
+option(PROX_BUILD_TESTS "Build the ProxOS test suites"            ${PROX_HOST_DEFAULT})
+option(PROX_VM_DEBUG    "Compile the VM with diagnostic error output (VM_DEBUG)" ON)
+option(PROX_WERROR      "Treat compiler warnings as errors"       OFF)
+
+if(NOT PROJECT_IS_TOP_LEVEL)
+    set(PROX_BUILD_TESTS OFF)
+endif()
+
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+get_property(PROX_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(NOT PROX_MULTI_CONFIG AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        Debug Release RelWithDebInfo MinSizeRel)
+endif()
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+
+if(MSVC)
+    set(PROX_WARNING_FLAGS /W4 $<$<BOOL:${PROX_WERROR}>:/WX>)
+else()
+    set(PROX_WARNING_FLAGS -Wall -Wextra -Wpedantic $<$<BOOL:${PROX_WERROR}>:-Werror>)
+endif()
+
+add_library(prox_vm STATIC
+    src/vm/vm.c
+)
+add_library(Prox::vm ALIAS prox_vm)
+
+target_include_directories(prox_vm PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+if(PROX_VM_DEBUG)
+    target_compile_definitions(prox_vm PUBLIC VM_DEBUG)
+endif()
+
+target_compile_options(prox_vm PRIVATE ${PROX_WARNING_FLAGS})
+
+set_target_properties(prox_vm PROPERTIES
+    OUTPUT_NAME proxvm
+    POSITION_INDEPENDENT_CODE ON
+)
+
+add_library(prox_asm STATIC
+    src/asm/assembler.cc
+)
+add_library(Prox::asm ALIAS prox_asm)
+
+target_include_directories(prox_asm PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_link_libraries(prox_asm PRIVATE Prox::vm)
+target_compile_options(prox_asm PRIVATE ${PROX_WARNING_FLAGS})
+
+set_target_properties(prox_asm PROPERTIES
+    OUTPUT_NAME proxasm
+    POSITION_INDEPENDENT_CODE ON
+)
+
+if(PROX_BUILD_CLI)
+    add_executable(prox
+        src/cli/main.cc
+    )
+
+    target_link_libraries(prox PRIVATE Prox::asm Prox::vm)
+    target_compile_options(prox PRIVATE ${PROX_WARNING_FLAGS})
+endif()
+
+if(PROX_BUILD_TESTS)
+    enable_testing()
+
+    add_executable(prox_vm_test tests/vm/test.c)
+    target_link_libraries(prox_vm_test PRIVATE Prox::vm)
+    target_compile_options(prox_vm_test PRIVATE ${PROX_WARNING_FLAGS})
+
+    add_executable(prox_asm_test tests/asm/test.cc)
+    target_link_libraries(prox_asm_test PRIVATE Prox::asm)
+    target_compile_options(prox_asm_test PRIVATE ${PROX_WARNING_FLAGS})
+
+    add_test(NAME vm  COMMAND prox_vm_test)
+    add_test(NAME asm COMMAND prox_asm_test)
+
+    set_tests_properties(vm asm PROPERTIES TIMEOUT 30)
+endif()
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+install(TARGETS prox_vm prox_asm
+    EXPORT ProxOSTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+if(PROX_BUILD_CLI)
+    install(TARGETS prox RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT ProxOSTargets
+    FILE ProxOSTargets.cmake
+    NAMESPACE Prox::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ProxOS
+)
+
+write_basic_package_version_file(
+    "${PROJECT_BINARY_DIR}/ProxOSConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)

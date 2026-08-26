@@ -2,16 +2,23 @@
 
 Just a fun side project.
 
+# Project structure
+| Subproject | purpose | directory |
+| ----- | ----- | ----- |
+| ProxVM | the bytecode VM that PRX programs run on in the ProxOS | /vm |
+| PrASM | the simple assembler that compiles PrASM to PRX bytecode | /prasm |
+| ProxKernel | the OS kernel for ProxOS | /kernel |
+
 # Executable/Language Formats and Files
 ## PrASM, the assembly language
 There are two primary syntaxes to remember:
 1. Instruction (most common): `OP_ID [args]`
-    * there will either be 0, 1, or 2 args
+    * there will either be 0, 1, or 2 args (NOP and RET must have zero args)
     * the argument values are as follows:
         * register: R[0-10]
         * integer: any 32 bit integer value
-        * label id: any valid identifier that starts with a letter or underscore, than is followed by any letter, number, or underscore (no other characters allowed)
-2. Label definition: `LBL label_id:`
+        * label id: any 32 bit integer value
+2. Label definition: `LBL id_number:`
 
 ## PRX, the bytecode binary format and the VM
 ### The file
