@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/Users/preston/Work/prox-os/build-kernel",
+  "command": "/usr/bin/clang -target aarch64-unknown-none-elf -I/Users/preston/Work/prox-os/include -g -ffreestanding -fno-builtin -fno-stack-protector -mgeneral-regs-only -Wall -Wextra -Wpedantic -o CMakeFiles/prox_kernel.dir/src/kernel/boot.S.obj -c /Users/preston/Work/prox-os/src/kernel/boot.S",
+  "file": "/Users/preston/Work/prox-os/src/kernel/boot.S",
+  "output": "CMakeFiles/prox_kernel.dir/src/kernel/boot.S.obj"
+},
+{
+  "directory": "/Users/preston/Work/prox-os/build-kernel",
+  "command": "/usr/bin/clang --target=aarch64-unknown-none-elf -I/Users/preston/Work/prox-os/include -g -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -mgeneral-regs-only -Wall -Wextra -Wpedantic -o CMakeFiles/prox_kernel.dir/src/kernel/main.c.obj -c /Users/preston/Work/prox-os/src/kernel/main.c",
+  "file": "/Users/preston/Work/prox-os/src/kernel/main.c",
+  "output": "CMakeFiles/prox_kernel.dir/src/kernel/main.c.obj"
+},
+{
+  "directory": "/Users/preston/Work/prox-os/build-kernel",
+  "command": "/usr/bin/clang --target=aarch64-unknown-none-elf -I/Users/preston/Work/prox-os/include -g -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -mgeneral-regs-only -Wall -Wextra -Wpedantic -o CMakeFiles/prox_kernel.dir/src/kernel/uart.c.obj -c /Users/preston/Work/prox-os/src/kernel/uart.c",
+  "file": "/Users/preston/Work/prox-os/src/kernel/uart.c",
+  "output": "CMakeFiles/prox_kernel.dir/src/kernel/uart.c.obj"
+},
+{
+  "directory": "/Users/preston/Work/prox-os/build-kernel",
+  "command": "/usr/bin/clang --target=aarch64-unknown-none-elf -I/Users/preston/Work/prox-os/include -g -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -mgeneral-regs-only -Wall -Wextra -Wpedantic -o CMakeFiles/prox_kernel.dir/src/kernel/printf.c.obj -c /Users/preston/Work/prox-os/src/kernel/printf.c",
+  "file": "/Users/preston/Work/prox-os/src/kernel/printf.c",
+  "output": "CMakeFiles/prox_kernel.dir/src/kernel/printf.c.obj"
+},
+{
+  "directory": "/Users/preston/Work/prox-os/build-kernel",
+  "command": "/usr/bin/clang --target=aarch64-unknown-none-elf -I/Users/preston/Work/prox-os/include -g -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -mgeneral-regs-only -Wall -Wextra -Wpedantic -o CMakeFiles/prox_kernel.dir/src/kernel/alloc.c.obj -c /Users/preston/Work/prox-os/src/kernel/alloc.c",
+  "file": "/Users/preston/Work/prox-os/src/kernel/alloc.c",
+  "output": "CMakeFiles/prox_kernel.dir/src/kernel/alloc.c.obj"
+}
+]

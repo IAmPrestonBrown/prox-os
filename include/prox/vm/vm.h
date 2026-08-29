@@ -11,20 +11,25 @@
 #ifndef VM_H
 #define VM_H
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
+// We have to manually define these because this needs to be near standalone
+// to run on the OS (ProxOS doesn't provide a std C lib).
+extern void* malloc(unsigned long bytes);
+extern void free(void* allocation);
+typedef unsigned int uint32_t;
+
+// "custom" printf implementation, either provided by C std or ProxOS
+#include <stdarg.h>
+void prox_printf(const char* format, ...);
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #ifdef VM_DEBUG
-#define error_out(msg)                \
-    do {                              \
-        fprintf(stderr, "%s\n", msg); \
-        fflush(stderr);               \
-        return -1;                    \
+#define error_out(msg)            \
+    do {                          \
+        prox_printf("%s\n", msg); \
+        return -1;                \
     } while(0);
 #else
 #define error_out(msg) \

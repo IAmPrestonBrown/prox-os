@@ -1,0 +1,14 @@
+# ninja log v5
+1	29	1788026186207333960	CMakeFiles/prox_kernel.dir/src/kernel/uart.c.obj	21ce838ff299e657
+1	29	1788026186207333669	CMakeFiles/prox_kernel.dir/src/kernel/alloc.c.obj	e46c56d7e65308
+1	29	1788026186207824960	CMakeFiles/prox_kernel.dir/src/kernel/main.c.obj	599c5af8940ce397
+1	30	1788026186208366501	CMakeFiles/prox_kernel.dir/src/kernel/printf.c.obj	25fabfc474ccc50f
+1	33	1788026186212300498	CMakeFiles/prox_kernel.dir/src/kernel/boot.S.obj	892d492da8ea9faa
+33	167	1788026186345081643	bin/prox_kernel.elf	e927ef98f12fe71f
+0	23	0	clean	1f0117926fe85a19
+1	22	1788026186435305240	CMakeFiles/prox_kernel.dir/src/kernel/alloc.c.obj	e46c56d7e65308
+1	22	1788026186435327323	CMakeFiles/prox_kernel.dir/src/kernel/main.c.obj	599c5af8940ce397
+1	23	1788026186435848156	CMakeFiles/prox_kernel.dir/src/kernel/printf.c.obj	25fabfc474ccc50f
+1	24	1788026186438638487	CMakeFiles/prox_kernel.dir/src/kernel/boot.S.obj	892d492da8ea9faa
+1	25	1788026186439574778	CMakeFiles/prox_kernel.dir/src/kernel/uart.c.obj	21ce838ff299e657
+25	47	1788026186461253053	bin/prox_kernel.elf	e927ef98f12fe71f

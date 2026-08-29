@@ -5,11 +5,23 @@
  */
 
 #include <prox/vm/vm.h>
-#include <string.h>
+
+#ifndef STANDALONE
+#include <stdio.h>
+
+// If building the VM to run on a host with C std support, than we can just use that
+// systems printf
+void prox_printf(const char* format, ...) {
+    va_list args;
+
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+}
+#endif
 
 VirtualMachine* create_vm(void) {
     VirtualMachine* vm = malloc(sizeof(VirtualMachine));
-    memset(vm, 0, sizeof(VirtualMachine));
     vm->stack_frames = malloc(sizeof(StackFrame));
     vm->stack_frame_count = 1;
 
@@ -276,14 +288,12 @@ int execute_program(VirtualMachine* vm, uint32_t* program, uint32_t length) {
             }
 
             case PRI: {
-                fprintf(stdout, "%i", vm->stack_frames[0].registers[args[0]].value);
-                fflush(stdout);
+                prox_printf("%i", vm->stack_frames[0].registers[args[0]].value);
                 continue;
             }
 
             case PRC: {
-                fprintf(stdout, "%c", vm->stack_frames[0].registers[args[0]].value);
-                fflush(stdout);
+                prox_printf("%c", vm->stack_frames[0].registers[args[0]].value);
                 continue;
             }
 
@@ -309,7 +319,8 @@ int execute_program(VirtualMachine* vm, uint32_t* program, uint32_t length) {
             case CAL: {
                 // expand the stack frames
                 StackFrame* fresh_stack_frames_call = malloc(sizeof(StackFrame) * ++vm->stack_frame_count);
-                memcpy(fresh_stack_frames_call + 1, vm->stack_frames, sizeof(StackFrame) * (vm->stack_frame_count - 1));
+                for(uint32_t i = 0; i < vm->stack_frame_count - 1; i++)
+                    fresh_stack_frames_call[i + 1] = vm->stack_frames[i];
                 free(vm->stack_frames);
 
                 // insert the new one at the start
@@ -318,7 +329,8 @@ int execute_program(VirtualMachine* vm, uint32_t* program, uint32_t length) {
                 vm->stack_frames[0].registers[REGISTER_COUNT] = (RegValue){.value = 0, .is_ref = 0};
 
                 // copy over register values from told stack frame to start the new one
-                memcpy(vm->stack_frames[0].registers, vm->stack_frames[1].registers, sizeof(RegValue) * REGISTER_COUNT);
+                for(uint32_t i = 0; i <= REGISTER_COUNT; i++)
+                    vm->stack_frames[0].registers[i] = vm->stack_frames[1].registers[i];
 
                 // Jump to the specified label
                 get_label(3, vm, args[0]);
@@ -335,7 +347,8 @@ int execute_program(VirtualMachine* vm, uint32_t* program, uint32_t length) {
 
                 i = vm->stack_frames[0].return_address - 1;
                 StackFrame* fresh_stack_frames_ret = malloc(sizeof(StackFrame) * --vm->stack_frame_count);
-                memcpy(fresh_stack_frames_ret, vm->stack_frames + 1, sizeof(StackFrame) * vm->stack_frame_count);
+                for(uint32_t i = 0; i < vm->stack_frame_count; i++)
+                    fresh_stack_frames_ret[i] = vm->stack_frames[i + 1];
                 free(vm->stack_frames);
                 vm->stack_frames = fresh_stack_frames_ret;
                 continue;
@@ -348,7 +361,8 @@ int execute_program(VirtualMachine* vm, uint32_t* program, uint32_t length) {
                 RegValue return_register_value = vm->stack_frames[0].registers[args[0]];
                 i = vm->stack_frames[0].return_address - 1;
                 StackFrame* fresh_stack_frames = malloc(sizeof(StackFrame) * --vm->stack_frame_count);
-                memcpy(fresh_stack_frames, vm->stack_frames + 1, sizeof(StackFrame) * vm->stack_frame_count);
+                for(uint32_t i = 0; i < vm->stack_frame_count; i++)
+                    fresh_stack_frames[i] = vm->stack_frames[i + 1];
                 free(vm->stack_frames);
                 vm->stack_frames = fresh_stack_frames;
                 vm->stack_frames[0].registers[REGISTER_COUNT] = return_register_value;

@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/preston/Work/prox-os/build-kernel/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

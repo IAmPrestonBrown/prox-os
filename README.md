@@ -8,7 +8,7 @@ Just a fun side project.
 | ProxVM | the bytecode VM that PRX programs run on in the ProxOS | /src/vm |
 | PrASM | the simple assembler that compiles PrASM to PRX bytecode | /src/asm |
 | Prox CLI | the host tool for driving the VM and the assembler from a normal OS | /src/cli |
-| ProxKernel | the OS kernel for ProxOS | /kernel |
+| ProxKernel | the OS kernel for ProxOS | /src/kernel |
 
 The public headers live in /include/prox, the test suites live in /tests, and example PrASM programs live in /examples.
 
@@ -28,17 +28,56 @@ ctest --test-dir build --output-on-failure
 | prox | executable | build/bin/prox |
 | prox_vm_test | test executable | build/bin/prox_vm_test |
 | prox_asm_test | test executable | build/bin/prox_asm_test |
+| prox_kernel | kernel image | build/bin/prox_kernel.elf |
 
 Options are set at configure time with -D:
 
 | Option | default | description |
 | ----- | ----- | ----- |
+| PROX_BUILD_VM | ON | build the ProxVM library |
+| PROX_BUILD_ASM | ON | build the PrASM assembler library |
 | PROX_BUILD_CLI | ON | build the prox host driver |
 | PROX_BUILD_TESTS | ON | build the test suites |
+| PROX_BUILD_KERNEL | OFF | build the kernel image |
 | PROX_VM_DEBUG | ON | compile the VM with diagnostic error output |
 | PROX_WERROR | OFF | treat compiler warnings as errors |
 
-The CLI and the tests both need a host operating system, so they default to OFF when cross compiling for the kernel. PROX_VM_DEBUG changes the error_out macro in the public header, so the library and anything including it have to agree on it.
+Everything except the kernel needs a host operating system, so the first four default to OFF when cross compiling and PROX_BUILD_KERNEL defaults to ON. PROX_VM_DEBUG changes the error_out macro in the public header, so the library and anything including it have to agree on it.
+
+# The ProxKernel
+The kernel is freestanding aarch64 and boots on the QEMU virt machine. Clang cross compiles it straight from the host install, so there is no separate cross toolchain to build. It needs clang and ld.lld.
+
+Build it in its own directory, since it uses a different toolchain than the host tree:
+
+```
+cmake -S . -B build-kernel -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/aarch64-none-elf.cmake
+cmake --build build-kernel
+```
+
+Then run it:
+
+```
+qemu-system-aarch64 -M virt -cpu cortex-a72 -nographic -kernel build-kernel/bin/prox_kernel.elf
+```
+
+Press ctrl-a then x to quit QEMU.
+
+| File | purpose |
+| ----- | ----- |
+| src/kernel/boot.S | parks the extra cores, sets the stack, clears the bss, calls kernel_main |
+| src/kernel/linker.ld | places the image at 0x40080000 and carves out the heap and the stack |
+| src/kernel/main.c | kernel_main and kernel_panic |
+| src/kernel/uart.c | raw character output on the PL011 at 0x09000000 |
+| src/kernel/printf.c | prox_printf on top of the UART |
+| src/kernel/alloc.c | malloc and free |
+
+The kernel supplies the three symbols that the VM declares in prox/vm/vm.h: malloc, free, and prox_printf. That is the whole contract between them. The VM does not run inside the kernel yet, because vm.c still includes stdio.h and defines its own host prox_printf. Move that definition into a host only file, and the VM links against the kernel instead.
+
+Every subsystem is a stub right now. Each function has its final signature and an empty body, so the image links and boots, but it produces no output:
+- uart_init and uart_putc do nothing, the PL011 base address is the only hint left in the file
+- prox_printf starts the argument list and hands it to prox_vprintf, which ignores it
+- malloc returns null, free does nothing, and the linker heap symbols sit unused
+- kernel_main calls uart_init and kernel_heap_init, then returns into the park loop in boot.S
 
 # The Prox CLI
 The CLI runs the VM and the assembler from a non-ProxOS system (i.e. windows, linux, macos, etc.):
@@ -89,7 +128,7 @@ The assembler is a near 1:1 translation, the only thing it adds on its own is th
 ### The file
 **executable.prx OR executable**
 
-PRX is what runs on the VM, it is not direct binary but rather a bytecode binary. Every PRX program has a short header: 
+PRX is what runs on the VM, it is not direct binary but rather a bytecode binary. Every PRX program has a short header:
 
 | 32 Bit Int Index (byte index x 4) | value | description |
 | ----- | ----- | ----- |

@@ -1,0 +1,7 @@
+/Users/preston/Work/prox-os/build-kernel/CMakeFiles/prox_kernel.dir
+/Users/preston/Work/prox-os/build-kernel/CMakeFiles/edit_cache.dir
+/Users/preston/Work/prox-os/build-kernel/CMakeFiles/rebuild_cache.dir
+/Users/preston/Work/prox-os/build-kernel/CMakeFiles/list_install_components.dir
+/Users/preston/Work/prox-os/build-kernel/CMakeFiles/install.dir
+/Users/preston/Work/prox-os/build-kernel/CMakeFiles/install/local.dir
+/Users/preston/Work/prox-os/build-kernel/CMakeFiles/install/strip.dir
